@@ -7,7 +7,7 @@ const app = Express();
 app.use(json());
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("working..");
 });
 
 app.get("/query1", async (req, res) => {
