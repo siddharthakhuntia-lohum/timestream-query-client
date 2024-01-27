@@ -1,7 +1,5 @@
-import AWS from "aws-sdk";
+import { TimestreamQueryClient } from "@aws-sdk/client-timestream-query";
 
 const AWSregion = "us-east-1";
 
-AWS.config.update({ region: AWSregion });
-
-export const queryClient = new AWS.TimestreamQuery();
+export const queryClient = new TimestreamQueryClient({ region: AWSregion });

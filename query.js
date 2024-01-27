@@ -1,4 +1,5 @@
 import { queryClient } from "./aws-clients.js";
+import { QueryCommand } from "@aws-sdk/client-timestream-query";
 import { DATABASE_NAME, TABLE_NAME } from "./constants.js";
 
 const SELECT_ALL_QUERY = "SELECT * FROM " + DATABASE_NAME + "." + TABLE_NAME;
@@ -15,22 +16,21 @@ async function getAllRows(query, nextToken) {
   if (nextToken) {
     params.NextToken = nextToken;
   }
+  const queryCommand = new QueryCommand(params);
 
-  await queryClient
-    .query(params)
-    .promise()
-    .then(
-      (response) => {
-        // parseQueryResult(response);
-        console.log(response);
-        if (response.NextToken) {
-          getAllRows(query, response.NextToken);
-        }
-      },
-      (err) => {
-        console.error("Error while querying:", err);
+  await queryClient.send(queryCommand).then(
+    (response) => {
+      //TODO: parse the response
+      // parseQueryResult(response);
+      console.log(response);
+      if (response.NextToken) {
+        getAllRows(query, response.NextToken);
       }
-    );
+    },
+    (err) => {
+      console.error("Error while querying:", err);
+    }
+  );
 }
 
 async function tryQueryWithMultiplePages(limit) {
