@@ -3,26 +3,8 @@ import { DATABASE_NAME, TABLE_NAME } from "./constants.js";
 
 const SELECT_ALL_QUERY = "SELECT * FROM " + DATABASE_NAME + "." + TABLE_NAME;
 
-const QUERY_1 =
-  "SELECT region, az, hostname, BIN(time, 15s) AS binned_timestamp, " +
-  "    ROUND(AVG(cpu_utilization), 2) AS avg_cpu_utilization, " +
-  "    ROUND(APPROX_PERCENTILE(cpu_utilization, 0.9), 2) AS p90_cpu_utilization, " +
-  "    ROUND(APPROX_PERCENTILE(cpu_utilization, 0.95), 2) AS p95_cpu_utilization, " +
-  "    ROUND(APPROX_PERCENTILE(cpu_utilization, 0.99), 2) AS p99_cpu_utilization " +
-  "FROM " +
-  DATABASE_NAME +
-  "." +
-  TABLE_NAME +
-  " " +
-  "WHERE measure_name = 'metrics' " +
-  "   AND hostname = '" +
-  "' " +
-  "    AND time > ago(2h) " +
-  "GROUP BY region, hostname, az, BIN(time, 15s) " +
-  "ORDER BY binned_timestamp ASC";
-
 async function runQuery1() {
-  await getAllRows(QUERY_1, null);
+  await getAllRows(SELECT_ALL_QUERY, null);
 }
 
 async function getAllRows(query, nextToken) {
