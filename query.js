@@ -2,10 +2,12 @@ import { queryClient } from "./aws-clients.js";
 import { QueryCommand } from "@aws-sdk/client-timestream-query";
 import { DATABASE_NAME, TABLE_NAME } from "./constants.js";
 
-const SELECT_ALL_QUERY = "SELECT * FROM " + DATABASE_NAME + "." + TABLE_NAME;
+const SELECT_ALL_QUERY =
+  "SELECT * FROM " + DATABASE_NAME + "." + TABLE_NAME + " LIMIT 10";
 
 async function runQuery1() {
-  await getAllRows(SELECT_ALL_QUERY, null);
+  const queryResponse = await getAllRows(SELECT_ALL_QUERY, null);
+  return queryResponse;
 }
 
 async function getAllRows(query, nextToken) {
@@ -18,19 +20,25 @@ async function getAllRows(query, nextToken) {
   }
   const queryCommand = new QueryCommand(params);
 
-  await queryClient.send(queryCommand).then(
-    (response) => {
-      //TODO: parse the response
-      // parseQueryResult(response);
-      console.log(response);
-      if (response.NextToken) {
-        getAllRows(query, response.NextToken);
-      }
-    },
-    (err) => {
-      console.error("Error while querying:", err);
-    }
-  );
+  // await queryClient.send(queryCommand).then(
+  //   (response) => {
+  //     //TODO: parse the response
+  //     // parseQueryResult(response);
+  //     console.log(response);
+
+  //     // if (response.NextToken) {
+  //     //   getAllRows(query, response.NextToken);
+  //     // }
+  //     return response;
+  //   },
+  //   (err) => {
+  //     console.error("Error while querying:", err);
+  //   }
+  // );
+  const response = await queryClient.send(queryCommand);
+  // console.log(response);
+  const parsedResponse = parseQueryResult(response);
+  return parsedResponse;
 }
 
 async function tryQueryWithMultiplePages(limit) {
@@ -79,32 +87,33 @@ async function cancelQuery(queryId) {
 function parseQueryResult(response) {
   const columnInfo = response.ColumnInfo;
   const rows = response.Rows;
-
-  console.log("Metadata: " + JSON.stringify(columnInfo));
-  console.log("Data: ");
+  const parsedRows = [];
 
   rows.forEach(function (row) {
-    console.log(parseRow(columnInfo, row));
+    parsedRows.push(parseRow(columnInfo, row));
   });
+
+  return { data: parsedRows, metadata: columnInfo };
 }
 
 function parseRow(columnInfo, row) {
   const data = row.Data;
-  const rowOutput = [];
+  const rowOutput = {};
 
   var i;
   for (i = 0; i < data.length; i++) {
-    info = columnInfo[i];
-    datum = data[i];
-    rowOutput.push(parseDatum(info, datum));
+    const info = columnInfo[i];
+    const datum = data[i];
+    // rowOutput.push(parseDatum(info, datum));
+    rowOutput[info.Name] = datum.ScalarValue;
   }
-
-  return `{${rowOutput.join(", ")}}`;
+  // console.log(rowOutput);
+  return rowOutput;
 }
 
 function parseDatum(info, datum) {
   if (datum.NullValue != null && datum.NullValue === true) {
-    return `${info.Name}=NULL`;
+    return NULL;
   }
 
   const columnType = info.Type;
@@ -152,7 +161,7 @@ function parseColumnName(info) {
   return info.Name == null ? "" : `${info.Name}=`;
 }
 
-function parseArray(arrayColumnInfo, arrayValues) {
+function  parseArray(arrayColumnInfo, arrayValues) {
   const arrayOutput = [];
   arrayValues.forEach(function (datum) {
     arrayOutput.push(parseDatum(arrayColumnInfo, datum));
