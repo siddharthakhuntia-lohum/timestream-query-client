@@ -5,6 +5,9 @@ const PORT = process.env.PORT || 3035;
 
 const app = Express();
 app.use(json());
+import batteryRoutes from "./routes.js";
+
+app.use("/battery", batteryRoutes);
 
 app.get("/", (req, res) => {
   res.send("working..");
