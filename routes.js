@@ -70,4 +70,35 @@ router.get("/highestcellvoltage", (req, res) => {
   res.json({ time, data: highestCellVoltage });
 });
 
+router.get("/data", (req, res) => {
+  const voltage = Math.random() * 100;
+  const current = Math.random() * 100;
+  const soc = Math.random() * 100;
+  const soh = Math.random() * 100;
+  const inverterEfficeincy = Math.random() * 100;
+  const temperature = Math.random() * 10 + 20;
+  const highestTemperature = Math.random() * 20 + 20;
+  const lowestTemperature = Math.random() * 3 + 20;
+  const cellVoltage = Math.random() * 100;
+  const lowestCellVoltage = Math.random() * 100;
+  const highestCellVoltage = Math.random() * 100;
+  const cds = Math.floor(Math.random()*2);
+  const data = {
+    voltage,
+    current,
+    soc,
+    soh,
+    cds,
+    inverterEfficeincy,
+    temperature,
+    highestTemperature,
+    lowestTemperature,
+    cellVoltage,
+    lowestCellVoltage,
+    highestCellVoltage,
+  };
+  const time = new Date();
+  res.json({ time, data });
+});
+
 export default router;
