@@ -6,6 +6,7 @@ const SELECT_ALL_QUERY =
   "SELECT * FROM " + DATABASE_NAME + "." + TABLE_NAME + " LIMIT 10";
 
 async function runQuery1() {
+  console.log(SELECT_ALL_QUERY);
   const queryResponse = await getAllRows(SELECT_ALL_QUERY, null);
   return queryResponse;
 }
@@ -19,7 +20,10 @@ async function getAllRows(query, nextToken) {
     params.NextToken = nextToken;
   }
   const queryCommand = new QueryCommand(params);
-
+  const response = await queryClient.send(queryCommand);
+  // console.log(response);
+  const parsedResponse = parseQueryResult(response);
+  return parsedResponse;
   // await queryClient.send(queryCommand).then(
   //   (response) => {
   //     //TODO: parse the response
@@ -35,10 +39,6 @@ async function getAllRows(query, nextToken) {
   //     console.error("Error while querying:", err);
   //   }
   // );
-  const response = await queryClient.send(queryCommand);
-  // console.log(response);
-  const parsedResponse = parseQueryResult(response);
-  return parsedResponse;
 }
 
 async function tryQueryWithMultiplePages(limit) {
@@ -161,7 +161,7 @@ function parseColumnName(info) {
   return info.Name == null ? "" : `${info.Name}=`;
 }
 
-function  parseArray(arrayColumnInfo, arrayValues) {
+function parseArray(arrayColumnInfo, arrayValues) {
   const arrayOutput = [];
   arrayValues.forEach(function (datum) {
     arrayOutput.push(parseDatum(arrayColumnInfo, datum));
